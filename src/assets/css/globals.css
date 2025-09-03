@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@plugin "flowbite-react/plugin/tailwindcss";
+@source "../../../.flowbite-react/class-list.json";
+@custom-variant dark (&:where(.dark, .dark *));
+
+* {
+  @apply outline-0 ring-0 text-black dark:text-white font-sans antialiased;
+}
+
+body {
+  @apply bg-white dark:bg-black;
+}
