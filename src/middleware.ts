@@ -10,16 +10,11 @@ export const middleware = async (request: NextRequest) => {
     nextUrl: { pathname },
   } = request;
 
-  console.log(sessionCookie);
-  if (
-    !sessionCookie &&
-    !authRoutes.includes(pathname) &&
-    !pathname.startsWith("/api/auth")
-  ) {
+  if (!sessionCookie && !authRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/sign-in", url));
   }
 
-  if (authRoutes.includes(pathname) && sessionCookie) {
+  if (sessionCookie && authRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/", url));
   }
 
@@ -27,5 +22,5 @@ export const middleware = async (request: NextRequest) => {
 };
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|api|favicon.ico).*)"],
 };

@@ -5,12 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { username } from "better-auth/plugins";
 
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET as string,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendVerificationEmail: async (data, request) => {
+      console.log(data, request);
+    },
   },
   plugins: [username()],
 });

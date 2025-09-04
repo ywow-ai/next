@@ -14,20 +14,26 @@ const Header: FC = () => {
     (async () => {
       try {
         const session = await authClient.getSession();
-        setUser(session.data?.user ?? null);
+        if (session.data) {
+          setUser(session.data.user);
+        } else {
+          await signOut();
+        }
       } catch (error) {
-        setUser(null);
+        await signOut();
       }
     })();
   }, []);
 
   const signOut = async () => {
-    try {
-      await authClient.signOut();
-      router.push("/sign-in");
-    } catch (error) {
-      console.log(error);
-    }
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          setUser(null);
+          router.push("/sign-in");
+        },
+      },
+    });
   };
 
   return (
