@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DB_URL")
 }
 
 model User {
@@ -20,6 +20,11 @@ model User {
   displayUsername String?
   sessions        Session[]
   accounts        Account[]
+
+  // app relation
+  events            Event[]             @relation("EventCreator")
+  eventCollaborator EventCollaborator[]
+  transaction       Transaction[]
 
   @@unique([email])
   @@unique([username])
@@ -69,4 +74,100 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String
+  description String?
+  important   String[]  @default([])
+  terms       Json?
+  additional  String[]  @default([])
+  coverImage  String?
+  images      String[]  @default([])
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  lat         Float?
+  lng         Float?
+  createdById String
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  creator       User                @relation("EventCreator", fields: [createdById], references: [id])
+  tickets       Ticket[]
+  collaborators EventCollaborator[]
+
+  @@unique([slug])
+  @@map("events")
+}
+
+model Ticket {
+  id         String    @id @default(uuid())
+  eventId    String
+  name       String
+  price      Float
+  stock      Int?
+  maxPerUser Int?
+  saleStart  DateTime?
+  saleEnd    DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  event           Event             @relation(fields: [eventId], references: [id])
+  TransactionItem TransactionItem[]
+
+  @@unique([eventId, name])
+  @@map("tickets")
+}
+
+model Transaction {
+  id        String            @id @default(uuid())
+  userId    String
+  adminFee  Float             @default(0)
+  status    TransactionStatus @default(PENDING)
+  deletedAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id])
+  TransactionItem TransactionItem[]
+
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id                  String @id @default(uuid())
+  transactionId       String
+  ticketId            String
+  snapshotTicketName  String
+  snapshotTicketPrice Float
+  quantity            Int
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  ticket      Ticket      @relation(fields: [ticketId], references: [id])
+
+  @@map("transaction_items")
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model EventCollaborator {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([eventId, userId])
+  @@map("event_collaborator")
 }

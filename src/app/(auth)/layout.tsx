@@ -1,15 +1,13 @@
-import { FC } from "react";
+import { ReactNode } from "react";
 
-const AuthLayout: FC<
-  Readonly<{
-    children: React.ReactNode;
-  }>
-> = ({ children }) => {
+type Props = Readonly<{
+  children: ReactNode;
+}>;
+
+export default async ({ children }: Props): Promise<ReactNode> => {
   return (
-    <div className="flex flex-col gap-6 items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="max-w-lg w-full">{children}</div>
     </div>
   );
 };
-
-export default AuthLayout;

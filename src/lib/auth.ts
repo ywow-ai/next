@@ -19,4 +19,9 @@ export const auth = betterAuth({
     },
   },
   plugins: [username()],
+  user: {
+    additionalFields: {
+      verified: { type: "boolean", required: false, defaultValue: false },
+    },
+  },
 });
