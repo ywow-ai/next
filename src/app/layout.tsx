@@ -5,7 +5,6 @@ import { ThemeModeScript, ThemeProvider } from "flowbite-react";
 import "@/assets/css/globals.css";
 import { mainTheme } from "@/lib/theme";
 import ThemeToggler from "@/components/theme-toggler";
-import Nav from "@/components/layouts/nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +35,6 @@ export default async ({ children }: Props): Promise<ReactNode> => {
         className={`${geistSans.variable} ${geistMono.variable} transition-colors`}
       >
         <ThemeProvider theme={mainTheme}>
-          <Nav />
           {children}
           <ThemeToggler />
         </ThemeProvider>

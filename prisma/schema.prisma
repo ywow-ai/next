@@ -21,10 +21,16 @@ model User {
   sessions        Session[]
   accounts        Account[]
 
+  // additional field
+  isVerified Boolean @default(false)
+  phone      String?
+
   // app relation
-  events            Event[]             @relation("EventCreator")
+  events            Event[]
   eventCollaborator EventCollaborator[]
   transaction       Transaction[]
+  cartItem          CartItem[]
+  transactionItem   TransactionItem[]
 
   @@unique([email])
   @@unique([username])
@@ -86,77 +92,23 @@ model Event {
   additional  String[]  @default([])
   coverImage  String?
   images      String[]  @default([])
-  startDate   DateTime
-  endDate     DateTime
+  startTime   DateTime
+  endTime     DateTime
   location    String?
   lat         Float?
   lng         Float?
+  isFree      Boolean   @default(false)
   createdById String
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  creator       User                @relation("EventCreator", fields: [createdById], references: [id])
+  creator       User                @relation(fields: [createdById], references: [id])
   tickets       Ticket[]
   collaborators EventCollaborator[]
 
   @@unique([slug])
   @@map("events")
-}
-
-model Ticket {
-  id         String    @id @default(uuid())
-  eventId    String
-  name       String
-  price      Float
-  stock      Int?
-  maxPerUser Int?
-  saleStart  DateTime?
-  saleEnd    DateTime?
-  deletedAt  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  event           Event             @relation(fields: [eventId], references: [id])
-  TransactionItem TransactionItem[]
-
-  @@unique([eventId, name])
-  @@map("tickets")
-}
-
-model Transaction {
-  id        String            @id @default(uuid())
-  userId    String
-  adminFee  Float             @default(0)
-  status    TransactionStatus @default(PENDING)
-  deletedAt DateTime?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-
-  user            User              @relation(fields: [userId], references: [id])
-  TransactionItem TransactionItem[]
-
-  @@map("transactions")
-}
-
-model TransactionItem {
-  id                  String @id @default(uuid())
-  transactionId       String
-  ticketId            String
-  snapshotTicketName  String
-  snapshotTicketPrice Float
-  quantity            Int
-
-  transaction Transaction @relation(fields: [transactionId], references: [id])
-  ticket      Ticket      @relation(fields: [ticketId], references: [id])
-
-  @@map("transaction_items")
-}
-
-enum TransactionStatus {
-  PENDING
-  PAID
-  CANCELLED
 }
 
 model EventCollaborator {
@@ -170,4 +122,79 @@ model EventCollaborator {
 
   @@unique([eventId, userId])
   @@map("event_collaborator")
+}
+
+model Ticket {
+  id          String    @id @default(uuid())
+  eventId     String
+  name        String
+  description String?
+  price       Float
+  stock       Int?
+  maxPerUser  Int?
+  saleStart   DateTime?
+  saleEnd     DateTime?
+  isPublished Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  event           Event             @relation(fields: [eventId], references: [id])
+  cartItem        CartItem[]
+  transactionItem TransactionItem[]
+
+  @@unique([eventId, name])
+  @@map("tickets")
+}
+
+model Transaction {
+  id        String            @id @default(uuid())
+  userId    String?
+  email     String
+  phone     String?
+  adminFee  Float             @default(0)
+  status    TransactionStatus @default(PENDING)
+  deletedAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user            User?             @relation(fields: [userId], references: [id])
+  transactionItem TransactionItem[]
+
+  @@map("transactions")
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model TransactionItem {
+  id                  String  @id @default(uuid())
+  transactionId       String
+  ticketId            String
+  snapshotTicketName  String
+  snapshotTicketPrice Float
+  quantity            Int
+  redeemedById        String?
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  ticket      Ticket      @relation(fields: [ticketId], references: [id])
+  redeemedBy  User?       @relation(fields: [redeemedById], references: [id])
+
+  @@map("transaction_items")
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  userId   String
+  ticketId String
+  quantity Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@unique([userId, ticketId])
+  @@map("cart")
 }

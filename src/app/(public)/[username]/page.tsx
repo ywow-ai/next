@@ -10,7 +10,13 @@ type Props = Readonly<{
 export default async ({ params }: Props): Promise<ReactNode> => {
   const { username } = await params;
   const user = await client.api.users({ identifier: username }).get();
-  if (user.status === 404) notFound();
+  if (user.error) {
+    if (user.status === 404) {
+      notFound();
+    } else {
+      throw new Error("Waduh, sistemnya lagi error vibes 🫠");
+    }
+  }
 
   return <p>username: {username}</p>;
 };

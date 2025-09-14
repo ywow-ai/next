@@ -1,4 +1,3 @@
-import "server-only";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +20,8 @@ export const auth = betterAuth({
   plugins: [username()],
   user: {
     additionalFields: {
-      verified: { type: "boolean", required: false, defaultValue: false },
+      isVerified: { type: "boolean", required: true, defaultValue: true },
+      phone: { type: "string", required: false },
     },
   },
 });
